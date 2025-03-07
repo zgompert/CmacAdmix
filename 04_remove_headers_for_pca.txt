@@ -1,0 +1,9 @@
+In order to easily manipulate the genotype file produced by est.post in R, it needs to have the header removed. The number of lines in the genotype file will originally be equal to the number of individuals you have plus one (the header). In my case, this means my genotype file contains 1546 + 1 lines = 1537 lines. You can check this using the following: 
+
+wc -l cmac_admix_MCMC_summaries_gprob_k3
+
+To remove the header line and output the results to a new file (rather than overwriting your original!) try the following: 
+
+The code below uses the function "sed" (try sed --help for options) to delete the header row (1 indicates row 1, d stands for delete) for the file named cmac_admix_MCMC_summaries_gprob_k3. The header-less file is then piped (|) to the "cut" function (try cut --help in the command line to see options) to remove the first column (which is the names of individual beetles and not necessary). Finally, the resulting file with row and column names removed is saved (>) to the file named cmac_admix_MCMC_summaries_gprob_k3_NOHEADERS.   
+
+sed "1d" cmac_admix_MCMC_summaries_gprob_k3 | cut -d, -f1 --complement > cmac_admix_MCMC_summaries_gprob_k3_NOHEADERS 
