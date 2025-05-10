@@ -47,12 +47,14 @@
 - [allele_freqs_for_popanc2.R](allele_freqs_for_popanc2.R)
 
 
-## Scripts for Ne, the null model and tests of parallelism
+## Scripts for Ne, the null model and tests of repeatability
 
 - [03_run_varne.pl](03_run_varne.pl)
 - [03_run_varne.sh](03_run_varne.sh)
 - [nullModel.R](nullModel.R)
 
+## Scripts for genome annotation
 
-
+- [run_braker.sh](run_braker.sh)
+- [run_inter.sh](run_inter.sh)
 
