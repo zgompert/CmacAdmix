@@ -1231,3 +1231,210 @@ axis(2,cex.axis=ca)
 box()
 title(main="(c) Evidence of selection in BZxCA on cowpea",cex.main=cm)
 dev.off()
+
+############ repeatability vs Ne #########
+load("null.rdat")
+
+nes<-matrix(c(53.2,39.5,38.7,43.7,NA,
+    78.1,95.0,68.0,56.4,58.2,
+    109.3,87.7,97.5,85.2,97.0,
+    177.9,180.1,169.7,163.3,128.0,
+    85.7,54.1,64.4,72.9,74.1,
+    137.7,156.6,158.4,161.4,150.9,
+    116.9,80.0,78.8,102.3,91.1,
+    191.9,213.9,212.8,142.8,222.4,
+    111.0,86.7,90.9,96.5,89.0),ncol=5,byrow=TRUE)
+
+## BFL, BZL, CAL, BFxBZC, BFxBZL, BFXCAC, BFxCAL, BZxCZC, BZxCAL
+
+mnNe<-apply(nes,1,mean,na.rm=TRUE)
+Nsig<-c(490,1807,1915,1607,2141,1979,2556,689,835)
+cor.test(mnNe,Nsig)
+#	Pearson's product-moment correlation
+#t = -0.24885, df = 7, p-value = 0.8106
+#alternative hypothesis: true correlation is not equal to 0
+#95 percent confidence interval:
+# -0.7133978  0.6083102
+#sample estimates:
+#        cor 
+#-0.09364214 
+
+pdf("NeRep.pdf",width=5,height=5)
+par(mar=c(5,5,1,1))
+plot(mnNe,Nsig,pch=19,xlab="Effective population size",ylab="Repeatability (no. SNPs)",cex.lab=1.4,cex.axis=1.1)
+dev.off()
+
+############ gene based summaries #########
+load("null.rdat")
+
+## read in gene locations from Brian's annotation
+genloc<-read.table("geneLocations.txt",header=FALSE)
+ingene<-rep(0,L)
+whichgene<-rep(NA,L)
+gbuff<-0 ## distance from gene to be in a gene
+for(i in 1:L){
+	a<-which(snps[i,1]==genloc[,1] & snps[i,3] >= (genloc[,2]-gbuff) & snps[i,3] <= (genloc[,3]+gbuff))
+	if(length(a)==1){
+		ingene[i]<-1
+		whichgene[i]<-genloc[a,4]
+	} else if (length(a) > 1){
+		ingene[i]<-length(a)
+		whichgene[i]<-genloc[a[1],4]
+	}
+}
+
+## write out gene ids for sets of picmin significant SNPs
+
+
+## BF on lentil
+fp0<-41
+p0<-read.table(aff[fp0],header=FALSE)
+com<-which(p0[,3] > 0.01 & p0[,3] < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBF,method="fdr") < 0.05
+gidsBF<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBF,file="gidsBF.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BZ on lentil
+fp0<-67
+p0<-read.table(aff[fp0],header=FALSE)
+com<-which(p0[,3] > 0.01 & p0[,3] < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBZ,method="fdr") < 0.05
+gidsBZ<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBZ,file="gidsBZ.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## CA on lentil
+fp0<-73
+p0<-read.table(aff[fp0],header=FALSE)
+com<-which(p0[,3] > 0.01 & p0[,3] < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpCA,method="fdr") < 0.05
+gidsCA<-sort(unique(whichgene[com[sig]]))
+write.table(gidsCA,file="gidsCA.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## late
+
+## BF/BZ on lentil
+p0f<-c(41,67)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxBZ_late,method="fdr") < 0.05
+gidsBFxBZ_late<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxBZ_late,file="gidsBFxBZ_late.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BF/CA on lentil
+p0f<-c(41,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxCA_late,method="fdr") < 0.05
+gidsBFxCA_late<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxCA_late,file="gidsBFxCA_late.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BZ/CA on lentil
+p0f<-c(67,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBZxCA_late,method="fdr") < 0.05
+gidsBZxCA_late<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBZxCA_late,file="gidsBZxCA_late.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## early
+
+## BF/BZ on lentil
+p0f<-c(41,67)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+early<-seq(2,10,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxBZ_early,method="fdr") < 0.05
+gidsBFxBZ_early<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxBZ_early,file="gidsBFxBZ_early.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BF/CA on lentil
+p0f<-c(41,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxCA_early,method="fdr") < 0.05
+gidsBFxCA_early<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxCA_early,file="gidsBFxCA_early.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BZ/CA on lentil
+p0f<-c(67,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBZxCA_early,method="fdr") < 0.05
+gidsBZxCA_early<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBZxCA_early,file="gidsBZxCA_early.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BF/BZ on cowpea
+p0f<-c(41,67)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxBZ_C_late,method="fdr") < 0.05
+gidsBFxBZ_cowpea<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxBZ_cowpea,file="gidsBFxBZ_cowpea.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BF/CA on cowpea
+p0f<-c(41,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBFxCA_C_late,method="fdr") < 0.05
+gidsBFxCA_cowpea<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBFxCA_cowpea,file="gidsBFxCA_cowpea.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## BZ/CA on cowpea
+p0f<-c(67,73)
+p0a<-read.table(aff[p0f[1]],header=FALSE)
+p0b<-read.table(aff[p0f[2]],header=FALSE)
+p0<-(p0a[,3]+p0b[,3])/2
+late<-seq(1,9,2)
+com<-which(p0 > 0.01 & p0 < 0.99 & is.na(snps[,1])==FALSE)
+sig<-p.adjust(picpBZxCA_C_late,method="fdr") < 0.05
+gidsBZxCA_cowpea<-sort(unique(whichgene[com[sig]]))
+write.table(gidsBZxCA_cowpea,file="gidsBZxCA_cowpea.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+## combos
+gidsLentilBZCA<-gidsBZ[which((gidsBZ %in% gidsBZxCA_late | gidsBZ %in% gidsBZxCA_early) & gidsBZ %in% gidsCA)]
+gidsLentilNoMx<-gidsBZ[which(gidsBZ %in% gidsBF & gidsBZ %in% gidsCA)]
+gidsLentilBF<-gidsBF[which((gidsBF %in% gidsBFxBZ_late | gidsBF %in% gidsBFxBZ_early) & (gidsBF %in% gidsBFxCA_late | gidsBF %in% gidsBFxCA_early))]
+gidsLentilAll<-gidsLentilBZCA[(gidsLentilBZCA %in% gidsLentilBF)]
+
+write.table(gidsLentilBZCA,file="gidsLentilBZCA.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+## locations for no admix consistent outliers
+genloc[which(genloc[,4] %in% gidsLentilNoMx),]
+
+## any lentil
+gidsLentilUnion<-unique(c(gidsBF,gidsBFxBZ_late,gidsBFxCA_late,gidsBZxCA_early,gidsBZ,gidsBZxCA_late,gidsBFxBZ_early,gidsBFxCA_early,gidsCA))
+length(gidsLentilUnion)
+## 1358
+#  1   2   3   4   5   6   7   8   9  10
+#227  42  83 124 210 133 110  13 265 151
+library(scales)
+
+pdf("geneCnts.pdf",width=7,height=5)
+par(mar=c(5,5,1,1))
+barplot(table(genloc[which(genloc[,4] %in% gidsLentilUnion),1]),xlab="Chromosome",ylab="Number of genes",col=alpha("firebrick4",.2),border="firebrick4",cex.lab=1.4,cex.axis=1.1)
+dev.off()
+
+write.table(gidsLentilUnion,file="gidsLentilUnion.txt",quote=FALSE,col.names=FALSE,row.names=FALSE)
+
+
+
